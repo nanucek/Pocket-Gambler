@@ -1,5 +1,6 @@
 Pocket Gambler
 Turn your M5Stack Cardputer into the ultimate pocket-sized casino and financial simulator! Pocket Gambler brings the thrill of betting, trading, and managing money right to your fingertips—completely risk-free.
+<img width="1024" height="1024" alt="Gemini_Generated_Image_lif6e0lif6e0lif6" src="https://github.com/user-attachments/assets/5e4c49ea-b5a7-4f07-a563-7c8c5fc8c202" />
 
 Key Features:
 
