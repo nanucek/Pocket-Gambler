@@ -3,12 +3,24 @@
 #include "core/save.h"
 #include "core/audio.h"
 
-// Aplikace includovane jako inline headery pro bypass vtable linker erroru
+// APLIKACE
 #include "apps/PlayerCard.h"
 #include "apps/Bank.h"
 #include "apps/CryptoTrade.h"
 #include "apps/BlackMarket.h"
+
+// HRY
 #include "games/Slots.h"
+#include "games/Blackjack.h"
+#include "games/Roulette.h"
+#include "games/VideoPoker.h"
+#include "games/Plinko.h"
+#include "games/CoinFlip.h"
+#include "games/Dice.h"
+#include "games/HighLow.h"
+#include "games/Crash.h"
+#include "games/Shells.h"
+#include "games/Mines.h"
 
 // Promenne pro eventy
 unsigned long lastEventTime = 0;
@@ -34,13 +46,24 @@ void triggerRandomEvent() {
     Save::saveAll();
 }
 
-const int MENU_ITEMS = 5;
+// MENU - 15 POLOŽEK
+const int MENU_ITEMS = 15; 
 const char* menu[MENU_ITEMS] = {
     "1. Player Card", 
     "2. Mafia Bank", 
     "3. Crypto Terminal", 
     "4. Black Market", 
-    "5. Slot Machine"
+    "5. Slot Machine",
+    "6. Blackjack",
+    "7. Roulette",
+    "8. Video Poker",
+    "9. Plinko",
+    "10. Coin Flip",
+    "11. Dice",
+    "12. High/Low",
+    "13. Crash",
+    "14. Shells",
+    "15. Mines"
 };
 
 int selected = 0;
@@ -48,7 +71,6 @@ Game* activeApp = nullptr;
 
 void setup() {
     auto cfg = M5.config();
-    // OPRAVA 2: Správná inicializace pro M5Unified (bez "true")
     M5Cardputer.begin(cfg); 
     
     UI::init();
@@ -57,40 +79,34 @@ void setup() {
     
     M5Cardputer.update(); 
     lastEventTime = millis();
-    // Bezpecnejsi generator cislice pro ESP32 (nedotyka se GPIO pinu)
     randomSeed(esp_random()); 
 }
 
 void loop() {
-    // OPRAVA 1: Rate limiter na max 100 Hz. Zabrání uškrcení I2C sběrnice klávesnice.
+    // Rate limiter pro sběrnici klávesnice (100 Hz)
     static unsigned long lastUpdate = 0;
     if (millis() - lastUpdate < 10) return;
     lastUpdate = millis();
 
     M5Cardputer.update();
 
-    // =========================================================================
-    // ABSOLUTNĚ NEPRŮSTŘELNÁ DETEKCE KLÁVES (VLASTNÍ HARDWAROVÝ DEBOUNCE)
-    // =========================================================================
+    // Vlastní hardwarový debounce kláves
     auto status = M5Cardputer.Keyboard.keysState();
     
     bool currentEnter = status.enter || M5Cardputer.BtnA.isPressed();
     bool currentUp = false;
     bool currentDown = false;
     
-    // Čteme surové znaky, které zrovna fyzicky držíš
     for (char c : status.word) {
         if (c == ';') currentUp = true;
         if (c == '.') currentDown = true;
         if (c == '\r' || c == '\n') currentEnter = true;
     }
 
-    // Paměť minulého framu
     static bool lastEnter = false;
     static bool lastUp = false;
     static bool lastDown = false;
 
-    // Klávesa platí za "zmáčknutou" JEN VE CHVÍLI, kdy se právě teď stiskla (hrana stisku)
     bool btnEnter = currentEnter && !lastEnter;
     bool btnUp = currentUp && !lastUp;
     bool btnDown = currentDown && !lastDown;
@@ -98,11 +114,9 @@ void loop() {
     lastEnter = currentEnter;
     lastUp = currentUp;
     lastDown = currentDown;
-    // =========================================================================
 
     // 1. Obsluha běžící aplikace
     if (activeApp != nullptr) {
-        // UPOZORNĚNÍ: Uvnitř activeApp->update() už nesmíš volat M5Cardputer.update() !
         activeApp->update();
         if (activeApp->isRunning()) {
             activeApp->draw();
@@ -120,13 +134,16 @@ void loop() {
         lastEventTime = millis();
     }
 
-    // 3. Vykreslení a obsluha náhodného eventu
+    // 3. Vykreslení náhodného eventu (vyčištěné překrývání)
     if(eventActive) {
         auto canvas = UI::getCanvas();
+        canvas->fillScreen(UI::C_BG);
+        UI::drawHeader("SYSTEM EVENT", Save::balance);
+        
         UI::drawNeonFrame(20, 30, 200, 75, 0xF800); 
         canvas->fillRect(22, 32, 196, 71, 0x0000);  
         canvas->setTextColor(0xFFE0, 0x0000);       
-        canvas->drawString(eventTitle.c_str(), 30, 40);
+        canvas->drawString(eventTitle.c_str(), 30, 42);
         canvas->setTextColor(0xFFFF, 0x0000);       
         canvas->drawString(eventDesc.c_str(), 30, 65);
         canvas->drawString("Press ENTER / G0", 50, 85);
@@ -139,7 +156,7 @@ void loop() {
         return; 
     }
 
-    // 4. Bleskové skrolování v menu
+    // 4. Skrolování v menu
     if (btnUp) { 
         if (selected > 0) selected--;
     }
@@ -147,7 +164,7 @@ void loop() {
         if (selected < MENU_ITEMS - 1) selected++;
     }
 
-    // 5. Spuštění vybrané aplikace z menu
+    // 5. Spuštění vybrané aplikace z menu (15 položek)
     if (btnEnter) {
         switch(selected) {
             case 0: activeApp = new PlayerCard(); break;
@@ -155,13 +172,23 @@ void loop() {
             case 2: activeApp = new CryptoTrade(); break;
             case 3: activeApp = new BlackMarket(); break;
             case 4: activeApp = new Slots(); break;
+            case 5: activeApp = new Blackjack(); break;
+            case 6: activeApp = new Roulette(); break;
+            case 7: activeApp = new VideoPoker(); break;
+            case 8: activeApp = new Plinko(); break;
+            case 9: activeApp = new CoinFlip(); break;
+            case 10: activeApp = new Dice(); break;
+            case 11: activeApp = new HighLow(); break;
+            case 12: activeApp = new Crash(); break;
+            case 13: activeApp = new Shells(); break;
+            case 14: activeApp = new Mines(); break;
         }
         if (activeApp != nullptr) {
             activeApp->init();
         }
     }
 
-    // 6. Vykreslení hlavního menu
+    // 6. Vykreslení hlavního menu (opravený Z-index a odsazení rámečku)
     auto canvas = UI::getCanvas();
     canvas->fillScreen(UI::C_BG);
     
@@ -171,15 +198,18 @@ void loop() {
     if (startIdx < 0) startIdx = 0;
     if (startIdx > MENU_ITEMS - 4) startIdx = max(0, MENU_ITEMS - 4);
     
+    // Rámeček se kreslí první, roztažený tak, aby neřezal text
+    int frameY = 35 + ((selected - startIdx) * 22) - 3;
+    UI::drawNeonFrame(8, frameY, 224, 24, UI::C_PRIM);
+
+    // Texty se kreslí až přes rámeček (nebo mimo něj) s odsazením zleva
     for (int i = 0; i < 4; i++) {
         int idx = startIdx + i;
         if (idx < MENU_ITEMS) {
-            canvas->setTextColor(idx == selected ? UI::C_TEXT : UI::C_SEC, UI::C_BG);
-            canvas->drawString(menu[idx], 20, 35 + (i * 22));
+            canvas->setTextColor(idx == selected ? UI::C_TEXT : UI::C_SEC);
+            canvas->drawString(menu[idx], 25, 35 + (i * 22));
         }
     }
     
-    UI::drawNeonFrame(10, 35 + ((selected - startIdx) * 22), 220, 20, UI::C_PRIM);
-
     UI::push();
 }

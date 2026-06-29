@@ -1,15 +1,14 @@
 import os
 
-# Cesty k tvým souborům (PlatformIO standard pro Cardputer)
-build_dir = ".pio/build/m5stack-stamps3"
-
+# Cesty k tvým souborům (PlatformIO standard pro Cardputer)build_dir = ".pio/build/m5stack-stamps3"
+BUILD_DIR = ".pio/build/m5stack-cardputer"
 files_to_merge = [
-    (0x0000, os.path.join(build_dir, "bootloader.bin")),
-    (0x8000, os.path.join(build_dir, "partitions.bin")),
-    (0x10000, os.path.join(build_dir, "firmware.bin"))
+    (0x0000, os.path.join(BUILD_DIR, "bootloader.bin")),
+    (0x8000, os.path.join(BUILD_DIR, "partitions.bin")),
+    (0x10000, os.path.join(BUILD_DIR, "firmware.bin"))
 ]
 
-output_file = os.path.join(build_dir, "firmware_merged.bin")
+output_file = os.path.join(BUILD_DIR, "firmware_merged.bin")
 
 def merge_binaries():
     print("Začínám spojovat binární soubory pro M5Burner...")

@@ -46,17 +46,22 @@ void UI::confetti() {
 void UI::drawHeader(const char* title, int balance) {
     canvas.fillRect(0, 0, 240, 25, C_BG);
     canvas.setTextColor(C_PRIM, C_BG);
-    canvas.drawString(title, 5, 5);
     
-    // Baterie posunuta, aby nezasahovala do penez
-    int bat = M5.Power.getBatteryLevel();
-    canvas.setTextColor(bat < 20 ? 0xF800 : C_SEC, C_BG); 
-    canvas.drawRightString((String(bat) + "%").c_str(), 145, 5);
+    // Nadpis zarovnán vlevo
+    canvas.drawString(title, 2, 5);
     
+    // Peníze zarovnané úplně vpravo
     char balStr[32];
     snprintf(balStr, sizeof(balStr), "$%d", balance);
     canvas.setTextColor(C_ACCENT, C_BG);
-    canvas.drawRightString(balStr, 235, 5); 
+    canvas.drawRightString(balStr, 238, 5); 
+    
+    // DYNAMICKÁ BATERIE: Zjistíme délku stringu peněz a baterii odsadíme před něj.
+    // Tím vznikne maximální prostor pro nadpis zleva.
+    int balWidth = canvas.textWidth(balStr);
+    int bat = M5.Power.getBatteryLevel();
+    canvas.setTextColor(bat < 20 ? 0xF800 : C_SEC, C_BG); 
+    canvas.drawRightString((String(bat) + "%").c_str(), 238 - balWidth - 15, 5);
     
     canvas.drawLine(0, 25, 240, 25, C_SEC);
 }
@@ -72,7 +77,6 @@ void UI::drawMenu(const char** items, int itemCount, int selectedIndex) {
     if (startIdx < 0) startIdx = 0;
     if (startIdx > itemCount - 4) startIdx = itemCount - 4;
     
-    // Vypocet relativni pozice na viditelne obrazovce pro opraveny ramecek
     int visibleIndex = selectedIndex - startIdx;
     float targetY = startY + (visibleIndex * itemHeight);
     currentHighlightY += (targetY - currentHighlightY) * 0.2f; 
@@ -80,13 +84,15 @@ void UI::drawMenu(const char** items, int itemCount, int selectedIndex) {
     canvas.fillScreen(C_BG);
     drawHeader("OS", Save::balance);
     
-    drawNeonFrame(10, (int)currentHighlightY, 220, 22, C_SEC);
+    // Opravený rámeček (roztažený na X=8, šířka 224), aby text nebyl nalepený na hraně
+    drawNeonFrame(8, (int)currentHighlightY - 2, 224, 22, C_SEC);
     
     for (int i = 0; i < 4; i++) {
         int idx = startIdx + i;
         if (idx < itemCount) {
             canvas.setTextColor(idx == selectedIndex ? C_TEXT : C_PRIM, C_BG);
-            canvas.drawString(items[idx], 20, startY + (i * itemHeight) + 3);
+            // Text o kousek posunutý doprava (X=25)
+            canvas.drawString(items[idx], 25, startY + (i * itemHeight) + 1);
         }
     }
     
