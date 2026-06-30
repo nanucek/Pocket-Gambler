@@ -1,6 +1,6 @@
-# Pocket Gambler OS – Release Notes (v0.2.1)
+# Pocket Gambler OS – Release Notes (v1.0.1)
 
-Pocket Gambler OS v0.2.1 transitions the platform from a simple minigame collection into a full-fledged, handheld operating system featuring an integrated RPG progression ecosystem, live Wi-Fi data streaming, and advanced wealth analytics.
+Pocket Gambler OS v1.0.1 transitions the platform from a simple minigame collection into a full-fledged, handheld operating system featuring an integrated RPG progression ecosystem, live Wi-Fi data streaming, and advanced wealth analytics.
 
 **A quick note of apology:** We are very sorry, but unfortunately, previous versions of this software may no longer be available or accessible. We appreciate your understanding and support as we continue to push the project forward with this latest build!
 <img width="1024" height="1024" alt="Pocket Gambler logo" src="https://github.com/user-attachments/assets/93959f5e-1e2c-4e8b-a174-9a7b2cfc36ee" />
@@ -34,10 +34,6 @@ Pocket Gambler OS v0.2.1 transitions the platform from a simple minigame collect
 * **Linker Collision Bypass (Monolithic App Header Design):** Due to PlatformIO compiler instability and recurrent linker errors (`undefined reference to vtable`), the architectural pattern for the custom apps directory (`src/apps/`) was refactored into inline header structures. This removes object compilation linking phases, packing the system directly into `main.cpp` cleanly.
 * **Memory and Scope Safety:** Eliminated universal macros like `RED` or `NEON_GREEN` inside game headers to prevent cross-contamination. Critical game layouts now communicate via raw Hex statements or through the global `UI::C_PRIM` theme variables.
 * **Battery Conservation Logic:** The Wi-Fi radio module activates exclusively after entering the Binance Terminal and committing an Enter sequence. Pressing Backspace safely terminates all network sockets and turns off the radio, preventing battery drain while enjoying localized games.
-
----
-
-*Developer Note: Due to structural layout changes in the data serialization of `save.txt`, booting v0.2.1 for the first time will automatically reinitialize old save data back to the base $1000 threshold.*
 
 ---
 
